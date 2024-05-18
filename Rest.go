@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"net/http"
 	"strings"
 
@@ -18,7 +19,7 @@ var votings = []voting{}
 
 func main() {
 	router := gin.Default()
-	//router.GET("/result", getResult)
+	router.GET("/result", getResult)
 	router.GET("/hello", hello_world)
 	router.POST("/vote", appendVote)
 	router.POST("/reset", reset)
@@ -26,11 +27,21 @@ func main() {
 	router.Run("localhost:8080")
 }
 
+func getResult(c *gin.Context) {
+	if finishedVoting {
+		vot := fmt.Sprintf("%+v\n", votings)
+		print(vot)
+		c.String(http.StatusOK, vot)
+
+	}
+}
+
 func hello_world(c *gin.Context) {
 	c.Status(http.StatusOK)
 }
 
 func reset(c *gin.Context) {
+	finishedVoting = false
 	votings = []voting{}
 	c.Status(http.StatusOK)
 }
@@ -41,7 +52,6 @@ func appendVote(c *gin.Context) {
 
 	present := isVotedPresent(vted)
 	if present > 0 {
-		print("Present: ", present)
 		v := votings[present-1].voter
 		v = v + ", " + vter
 
@@ -49,9 +59,7 @@ func appendVote(c *gin.Context) {
 			voted: vted,
 			voter: v,
 		}
-		println("remove")
 		remove(present - 1)
-		println("append")
 		votings = append(votings, vot)
 
 	} else {
@@ -100,51 +108,3 @@ func countWords(s string, sep string) int {
 	words := strings.Split(s, sep)
 	return len(words)
 }
-
-// Query string parameters are parsed using the existing underlying request object.
-//   /vote?voted=Axl&voter=Jil
-
-/*
-	{voted: "Axl", voter: "dfdf"},
-	{voted: "Jil"},
-	{voted: "Kim"},
-	{voted: "Linora"},
-	{voted: "Lulu"},
-	{voted: "Lutzispatzi"},
-	{voted: "Manuel"},
-	{voted: "Patrick"},
-
-
-
-
-*/
-
-/*
-func getAlbums(c *gin.Context) {
-	c.IndentedJSON(http.StatusOK, albums)
-}
-
-func postAlbums(c *gin.Context) {
-	var newAlbum album
-	if err := c.BindJSON(&newAlbum); err != nil {
-		return
-	}
-
-	albums = append(albums, newAlbum)
-	c.IndentedJSON(http.StatusCreated, newAlbum)
-}
-
-func getAlbumByID(c *gin.Context) {
-	id := c.Param("id")
-
-	// Loop through the list of albums, looking for
-	// an album whose ID value matches the parameter.
-	for _, a := range albums {
-		if a.ID == id {
-			c.IndentedJSON(http.StatusOK, a)
-			return
-		}
-	}
-	c.IndentedJSON(http.StatusNotFound, gin.H{"message": "album not found"})
-}
-*/
