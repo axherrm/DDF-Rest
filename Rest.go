@@ -24,8 +24,9 @@ func main() {
 	router.POST("/vote", appendVote)
 	router.POST("/reset", reset)
 
-	router.Run("localhost:8080")
+	router.Run("0.0.0.0:8080")
 }
+
 
 func getResult(c *gin.Context) {
 	if finishedVoting {
